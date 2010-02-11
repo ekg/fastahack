@@ -42,6 +42,7 @@ FastaIndex::FastaIndex(void)
 {}
 
 void FastaIndex::readIndexFile(string fname) {
+    cerr << "reading fasta index file " << fname << endl;
     string line;
     long long linenum = 0;
     vector<string> fields;
@@ -91,6 +92,7 @@ void FastaIndex::indexReference(string refname) {
     //  track byte offset from the start of the file
     //  if line is a fasta header, take the name and dump the last sequnece to the index
     //  if line is a sequence, add it to the current sequence
+    cerr << "indexing fasta reference " << refname << endl;
     string line;
     FastaIndexEntry entry;  // an entry buffer used in processing
     entry.clear();
@@ -152,6 +154,7 @@ void FastaIndex::flushEntryToIndex(FastaIndexEntry& entry) {
 }
 
 void FastaIndex::writeIndexFile(string fname) {
+    cerr << "writing fasta index file " << fname << endl;
     ofstream file;
     file.open(fname.c_str()); 
     if (file.is_open()) {
@@ -178,12 +181,18 @@ FastaReference::FastaReference(string reffilename) {
     index = new FastaIndex();
     struct stat stFileInfo; 
     string indexFileName = filename + index->indexFileExtension(); 
+    vector<string> pathparts;
+    boost::split(pathparts, filename, boost::is_any_of("/"));
+    // index file name relative to the current directory
+    string cwdIndexFileName = pathparts.back() + index->indexFileExtension();
     // if we can find an index file, use it
     if(stat(indexFileName.c_str(), &stFileInfo) == 0) { 
         index->readIndexFile(indexFileName);
-    } else { // otherwise, read the reference and generate the index file
+    } else if(stat(cwdIndexFileName.c_str(), &stFileInfo) == 0) { 
+        index->readIndexFile(cwdIndexFileName);
+    } else { // otherwise, read the reference and generate the index file in the cwd
         index->indexReference(filename);
-        index->writeIndexFile(indexFileName);
+        index->writeIndexFile(cwdIndexFileName);
     }
 }
 

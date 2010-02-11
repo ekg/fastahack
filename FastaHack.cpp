@@ -32,10 +32,12 @@ int main (int argc, char** argv) {
     }
 
     if (command == "index") {
-        FastaIndex* fai = new FastaIndex();
+        FastaReference* fr = new FastaReference(fastaFileName);
+        /*FastaIndex* fai = new FastaIndex();
         cerr << "generating fasta index file from " << fastaFileName << endl;
         fai->indexReference(fastaFileName);
         fai->writeIndexFile((string) fastaFileName + fai->indexFileExtension());
+        */
     } else {
         if (!argv[3]) {
             cerr << "please specify the name of a sequence to print" << endl;
