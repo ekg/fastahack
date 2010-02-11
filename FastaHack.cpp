@@ -3,7 +3,7 @@
 void printSummary() {
     cerr << "usage: fastahack <command> [options]" << endl
          << "actions:" << endl 
-         << "    index <fasta reference> <sequence name>" << endl
+         << "    index <fasta reference>" << endl
          << "    sequence <fasta reference> <sequence name>" << endl
          << "    subsequence <fasta reference> <sequence name> <start> <length>" << endl;
 }
