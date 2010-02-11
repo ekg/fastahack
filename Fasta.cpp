@@ -42,7 +42,6 @@ FastaIndex::FastaIndex(void)
 {}
 
 void FastaIndex::readIndexFile(string fname) {
-    cerr << "reading fasta index file " << fname << endl;
     string line;
     long long linenum = 0;
     vector<string> fields;
@@ -140,7 +139,7 @@ void FastaIndex::indexReference(string refname) {
         // flush the last entry
         flushEntryToIndex(entry);
     } else {
-        cerr << "could not open reference file " << refname << " for index generation!" << endl;
+        cerr << "could not open reference file " << refname << " for indexing!" << endl;
         exit(1);
     }
 }
@@ -181,18 +180,13 @@ FastaReference::FastaReference(string reffilename) {
     index = new FastaIndex();
     struct stat stFileInfo; 
     string indexFileName = filename + index->indexFileExtension(); 
-    vector<string> pathparts;
-    boost::split(pathparts, filename, boost::is_any_of("/"));
-    // index file name relative to the current directory
-    string cwdIndexFileName = pathparts.back() + index->indexFileExtension();
     // if we can find an index file, use it
     if(stat(indexFileName.c_str(), &stFileInfo) == 0) { 
         index->readIndexFile(indexFileName);
-    } else if(stat(cwdIndexFileName.c_str(), &stFileInfo) == 0) { 
-        index->readIndexFile(cwdIndexFileName);
     } else { // otherwise, read the reference and generate the index file in the cwd
+        cerr << "index file " << indexFileName << " not found, generating..." << endl;
         index->indexReference(filename);
-        index->writeIndexFile(cwdIndexFileName);
+        index->writeIndexFile(indexFileName);
     }
 }
 
