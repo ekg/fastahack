@@ -200,7 +200,12 @@ string FastaReference::getSequence(string seqname) {
     char* seq = (char*) malloc (sizeof(char)*entry.length);
     fseek64(file, entry.offset, SEEK_SET);
     fread(seq, sizeof(char), entry.length, file);
-    return (string) seq;
+    char* pbegin = seq;
+    char* pend = seq + ((string)seq).size()/sizeof(char);
+    pend = remove (pbegin, pend, '\n');
+    string s = seq;
+    s.resize((pend - pbegin)/sizeof(char));
+    return s;
 }
 
 string FastaReference::sequenceNameStartingWith(string seqnameStart) {
