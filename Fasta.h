@@ -59,6 +59,9 @@ class FastaReference {
         FastaIndex* index;
         vector<FastaIndexEntry> findSequencesStartingWith(string seqnameStart);
         string getSequence(string seqname);
+        // potentially useful for performance, investigate
+        // void getSequence(string seqname, string& sequence);
         string getSubSequence(string seqname, int start, int length);
         string sequenceNameStartingWith(string seqnameStart);
+        long unsigned int sequenceLength(string seqname);
 };

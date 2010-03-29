@@ -5,7 +5,8 @@ void printSummary() {
          << "actions:" << endl 
          << "    index <fasta reference>" << endl
          << "    sequence <fasta reference> <sequence name>" << endl
-         << "    subsequence <fasta reference> <sequence name> <start> <length>" << endl;
+         << "    subsequence <fasta reference> <sequence name> <start> <length>" << endl
+         << "    stats <fasta reference> <sequence name>" << endl;
 }
 
 int main (int argc, char** argv) {
@@ -66,6 +67,8 @@ int main (int argc, char** argv) {
                 length = lexical_cast<long long>(argv[5]);
             }
             cout << fr->getSubSequence(longseqname, start, length) << endl;
+        } else if (command == "stats") {
+            cout << "length: " << fr->sequenceLength(longseqname) << endl;
         }
     }
     return 0;
