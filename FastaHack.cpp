@@ -5,8 +5,8 @@ void printSummary() {
          << "actions:" << endl 
          << "    index <fasta reference>" << endl
          << "    sequence <fasta reference> <sequence name>" << endl
-         << "    subsequence <fasta reference> <sequence name> <start> <length>" << endl
-         << "    stats <fasta reference> <sequence name>" << endl;
+         << "    subsequence <fasta reference> <sequence name> <0-based start> <length>" << endl
+         << "    stats <fasta reference> <sequence name>  (returns sequence length)" << endl;
 }
 
 int main (int argc, char** argv) {

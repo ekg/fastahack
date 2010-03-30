@@ -226,10 +226,12 @@ string FastaReference::sequenceNameStartingWith(string seqnameStart) {
             }
         }
     }
-    if (result != "")
+    if (result != "") {
         return result;
-    else
-        return "";
+    } else {
+        cerr << "could not find sequence named " << seqnameStart << endl;
+        return ""; // XXX returning an empty string is a bad result; it should raise an error!!!
+    }
 }
 
 string FastaReference::getSubSequence(string seqname, int start, int length) {
