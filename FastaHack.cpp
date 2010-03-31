@@ -38,13 +38,13 @@ int main (int argc, char** argv) {
         fai->indexReference(fastaFileName);
         fai->writeIndexFile((string) fastaFileName + fai->indexFileExtension());
     } else {
+        FastaReference* fr = new FastaReference(fastaFileName);
         if (!argv[3]) {
             cerr << "please specify the name of a sequence to print" << endl;
             exit(1);
         } else {
             seqname = argv[3];
         }
-        FastaReference* fr = new FastaReference(fastaFileName);
         if (fr->index->find(seqname) == fr->index->end()) {
             longseqname = fr->sequenceNameStartingWith(seqname);
         } else {
@@ -68,7 +68,7 @@ int main (int argc, char** argv) {
             }
             cout << fr->getSubSequence(longseqname, start, length) << endl;
         } else if (command == "stats") {
-            cout << "length: " << fr->sequenceLength(longseqname) << endl;
+            cout << fr->sequenceLength(longseqname) << endl;
         }
     }
     return 0;

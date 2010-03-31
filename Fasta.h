@@ -6,6 +6,9 @@
 // Last modified: 5 February 2010 (EG)
 // ---------------------------------------------------------------------------
 
+#ifndef _FASTA_H
+#define _FASTA_H
+
 #include <map>
 #include <iostream>
 #include <fstream>
@@ -65,3 +68,6 @@ class FastaReference {
         string sequenceNameStartingWith(string seqnameStart);
         long unsigned int sequenceLength(string seqname);
 };
+
+#endif
+
