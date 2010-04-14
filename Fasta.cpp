@@ -97,10 +97,17 @@ void FastaIndex::indexReference(string refname) {
     entry.clear();
     int line_length = 0;
     long long offset = 0;  // byte offset from start of file
+    long long line_number = 0; // current line number
+    bool mismatchedLineLengths = false; // flag to indicate if our line length changes mid-file
+                                        // this will be used to raise an error
+                                        // if we have a line length change at
+                                        // any line other than the last line in
+                                        // the sequence
     ifstream refFile;
     refFile.open(refname.c_str());
     if (refFile.is_open()) {
         while (getline(refFile, line)) {
+            ++line_number;
             line_length = line.length();
             if (line[0] == ';') {
                 // fasta comment, skip
@@ -115,6 +122,7 @@ void FastaIndex::indexReference(string refname) {
             } else if (line[0] == '>' || line[0] == '@') { // fasta /fastq header
                 // if we aren't on the first entry, push the last sequence into the index
                 if (entry.name != "") {
+                    mismatchedLineLengths = false; // reset line length error tracker for every new sequence
                     flushEntryToIndex(entry);
                     entry.clear();
                 }
@@ -123,14 +131,19 @@ void FastaIndex::indexReference(string refname) {
                 if (entry.offset == -1) // NB initially the offset is -1
                     entry.offset = offset;
                 entry.length += line_length;
-                // NOTE: samtools calls errors if the lines are different lengths; should we?
-                // Is this a violation of the FASTA format spec?  Or is it just heavy-handed validation?
-                // 
-                // Instead of calling foul if our lines have mismatched
-                // lengths, here we report the *longest* line in the sequence.
-                // For well-formatted fasta files, this should be the 'normal'
-                // line length.
-                entry.line_len = entry.line_len ? entry.line_len : line_length + 1;
+                if (entry.line_len) {
+                    //entry.line_len = entry.line_len ? entry.line_len : line_length + 1;
+                    if (mismatchedLineLengths) {
+                        cerr << "ERROR: mismatched line lengths at line " <<
+                            line_number << " within sequence " << entry.name <<
+                            endl;
+                        exit(1);
+                    }
+                    if (entry.line_len != line_length + 1)
+                        mismatchedLineLengths = true;
+                } else {
+                    entry.line_len = line_length + 1; // first line
+                }
                 entry.line_blen = entry.line_len - 1;
             }
             offset += line_length + 1;
