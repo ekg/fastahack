@@ -103,6 +103,8 @@ void FastaIndex::indexReference(string refname) {
                                         // if we have a line length change at
                                         // any line other than the last line in
                                         // the sequence
+    bool emptyLine = false;  // flag to catch empty lines, which we allow for
+                             // index generation only on the last line of the sequence
     ifstream refFile;
     refFile.open(refname.c_str());
     if (refFile.is_open()) {
@@ -123,6 +125,7 @@ void FastaIndex::indexReference(string refname) {
                 // if we aren't on the first entry, push the last sequence into the index
                 if (entry.name != "") {
                     mismatchedLineLengths = false; // reset line length error tracker for every new sequence
+                    emptyLine = false;
                     flushEntryToIndex(entry);
                     entry.clear();
                 }
@@ -133,14 +136,29 @@ void FastaIndex::indexReference(string refname) {
                 entry.length += line_length;
                 if (entry.line_len) {
                     //entry.line_len = entry.line_len ? entry.line_len : line_length + 1;
-                    if (mismatchedLineLengths) {
-                        cerr << "ERROR: mismatched line lengths at line " <<
-                            line_number << " within sequence " << entry.name <<
-                            endl;
-                        exit(1);
+                    if (mismatchedLineLengths || emptyLine) {
+                        if (line_length == 0) {
+                            emptyLine = true; // flag empty lines, raise error only if this is embedded in the sequence
+                        } else {
+                            if (emptyLine) {
+                                cerr << "ERROR: embedded newline";
+                            } else {
+                                cerr << "ERROR: mismatched line lengths";
+                            }
+                            cerr << " at line " << line_number << " within sequence " << entry.name <<
+                                endl << "File not suitable for fasta index generation." << endl;
+                            exit(1);
+                        }
                     }
-                    if (entry.line_len != line_length + 1)
+                    // this flag is set here and checked on the next line
+                    // because we may have reached the end of the sequence, in
+                    // which case a mismatched line length is OK
+                    if (entry.line_len != line_length + 1) {
                         mismatchedLineLengths = true;
+                        if (line_length == 0) {
+                            emptyLine = true; // flag empty lines, raise error only if this is embedded in the sequence
+                        }
+                    }
                 } else {
                     entry.line_len = line_length + 1; // first line
                 }
@@ -210,12 +228,16 @@ FastaReference::~FastaReference(void) {
 
 string FastaReference::getSequence(string seqname) {
     FastaIndexEntry entry = index->entry(seqname);
-    char* seq = (char*) malloc (sizeof(char)*entry.length);
+    int newlines_in_sequence = entry.length / entry.line_blen;
+    int total_length = newlines_in_sequence  + entry.length;
+    char* seq = (char*) malloc (sizeof(char)*total_length);
     fseek64(file, entry.offset, SEEK_SET);
-    fread(seq, sizeof(char), entry.length, file);
+    fread(seq, sizeof(char), total_length, file);
     char* pbegin = seq;
     char* pend = seq + ((string)seq).size()/sizeof(char);
     pend = remove (pbegin, pend, '\n');
+    // TODO check if this works for \r
+    // pend = remove (pbegin, pend, '\r');
     string s = seq;
     s.resize((pend - pbegin)/sizeof(char));
     return s;
@@ -277,7 +299,6 @@ string FastaReference::getSubSequence(string seqname, int start, int length) {
 
 long unsigned int FastaReference::sequenceLength(string seqname) {
     FastaIndexEntry entry = index->entry(seqname);
-    int newlines_in_sequence = entry.length / entry.line_len;
-    return entry.length - newlines_in_sequence;
+    return entry.length;
 }
 
