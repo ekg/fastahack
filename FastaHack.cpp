@@ -45,11 +45,7 @@ int main (int argc, char** argv) {
         } else {
             seqname = argv[3];
         }
-        if (fr->index->find(seqname) == fr->index->end()) {
-            longseqname = fr->sequenceNameStartingWith(seqname);
-        } else {
-            longseqname = seqname;
-        }
+        longseqname = fr->sequenceNameStartingWith(seqname);
         if (longseqname == "") {
             cerr << "could not find sequence in reference " << fastaFileName <<
                 " named or starting with " << seqname << endl;
