@@ -240,6 +240,7 @@ string FastaReference::getSequence(string seqname) {
     // TODO check if this works for \r
     // pend = remove (pbegin, pend, '\r');
     string s = seq;
+    free(seq);
     s.resize((pend - pbegin)/sizeof(char));
     return s;
 }
