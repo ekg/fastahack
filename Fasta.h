@@ -15,15 +15,15 @@
 #include <vector>
 #include <stdint.h>
 #include <stdio.h>
-#include <boost/algorithm/string.hpp>
-//#include <boost/algorithm/string/erase.hpp>
-#include <boost/lexical_cast.hpp>
+#include <algorithm>
 #include "LargeFileSupport.h"
 #include <sys/stat.h>
-
+#include "Split.h"
+#include <stdlib.h>
+#include <ctype.h>
+#include <unistd.h>
 
 using namespace std;
-using boost::lexical_cast;
 
 class FastaIndexEntry {
     friend ostream& operator<<(ostream& output, const FastaIndexEntry& e);

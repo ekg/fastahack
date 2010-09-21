@@ -59,8 +59,9 @@ int main (int argc, char** argv) {
                 cerr << "no subsequence boundaries specified" << endl;
                 exit(1);
             } else {
-                start = lexical_cast<long long>(argv[4]);
-                length = lexical_cast<long long>(argv[5]);
+                char* end;
+                start = strtoll(argv[4], &end, 10);
+                length = strtoll(argv[5], &end, 10);
             }
             cout << fr->getSubSequence(longseqname, start, length) << endl;
         } else if (command == "stats") {

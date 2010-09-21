@@ -44,21 +44,20 @@ FastaIndex::FastaIndex(void)
 void FastaIndex::readIndexFile(string fname) {
     string line;
     long long linenum = 0;
-    vector<string> fields;
     indexFile.open(fname.c_str(), ifstream::in);
     if (indexFile.is_open()) {
         while (getline (indexFile, line)) {
             ++linenum;
-            fields.clear();
             // the fai format defined in samtools is tab-delimited, every line being:
             // fai->name[i], (int)x.len, (long long)x.offset, (int)x.line_blen, (int)x.line_len
-            boost::split(fields, line, boost::is_any_of("\t")); // split on tab
+            vector<string> fields = split(line, '\t');
             if (fields.size() == 5) {  // if we don't get enough fields then there is a problem with the file
                 // note that fields[0] is the sequence name
-                this->push_back(FastaIndexEntry(fields[0], lexical_cast<int>(fields[1]),
-                                                    lexical_cast<long long>(fields[2]),
-                                                    lexical_cast<int>(fields[3]),
-                                                    lexical_cast<int>(fields[4])));
+                char* end;
+                this->push_back(FastaIndexEntry(fields[0], atoi(fields[1].c_str()),
+                                                    strtoll(fields[2].c_str(), &end, 10),
+                                                    atoi(fields[3].c_str()),
+                                                    atoi(fields[4].c_str())));
             } else {
                 cerr << "Warning: malformed fasta index file " << fname << 
                     "does not have enough fields @ line " << linenum << endl;
@@ -230,15 +229,15 @@ FastaReference::~FastaReference(void) {
 string FastaReference::getSequence(string seqname) {
     FastaIndexEntry entry = index->entry(seqname);
     int newlines_in_sequence = entry.length / entry.line_blen;
-    int total_length = newlines_in_sequence  + entry.length;
-    char* seq = (char*) malloc (sizeof(char)*total_length);
+    int seqlen = newlines_in_sequence  + entry.length;
+    char* seq = (char*) calloc (seqlen + 1, sizeof(char));
     fseek64(file, entry.offset, SEEK_SET);
-    fread(seq, sizeof(char), total_length, file);
+    fread(seq, sizeof(char), seqlen, file);
+    seq[seqlen] = '\0';
     char* pbegin = seq;
-    char* pend = seq + ((string)seq).size()/sizeof(char);
-    pend = remove (pbegin, pend, '\n');
-    // TODO check if this works for \r
-    // pend = remove (pbegin, pend, '\r');
+    char* pend = seq + (seqlen/sizeof(char));
+    pend = remove(pbegin, pend, '\n');
+    pend = remove(pbegin, pend, '\0');
     string s = seq;
     free(seq);
     s.resize((pend - pbegin)/sizeof(char));
@@ -248,10 +247,9 @@ string FastaReference::getSequence(string seqname) {
 string FastaReference::sequenceNameStartingWith(string seqnameStart) {
     string teststr;
     string result = "";
-    vector<string> fields;
     for(vector<FastaIndexEntry>::const_iterator it = index->begin(); it != index->end(); ++it)
     {
-        boost::split(fields, it->name, boost::is_any_of("\t ")); // split on ws
+        vector<string> fields = split(it->name, "\t "); // split on ws
         // check if the first field is the same as our startseq
         teststr = fields.at(0);
         if (teststr == seqnameStart) {
@@ -286,19 +284,18 @@ string FastaReference::getSubSequence(string seqname, int start, int length) {
     int newlines_before = start > 0 ? (start - 1) / entry.line_blen : 0;
     int newlines_by_end = (start + length - 1) / entry.line_blen;
     int newlines_inside = newlines_by_end - newlines_before;
-    /*
-    cout << "start: " << start << " length: " << length << endl;
-    cout << "newlines before: " << newlines_before << endl;
-    cout << "newlines inside: " << newlines_inside << endl;
-    */
     int seqlen = length + newlines_inside;
-    char* seq = (char*) malloc (sizeof(char)*seqlen + 1);
+    char* seq = (char*) calloc (seqlen + 1, sizeof(char));
     fseek64(file, (off_t) (entry.offset + newlines_before + start), SEEK_SET);
     fread(seq, sizeof(char), (off_t) seqlen, file);
     seq[seqlen] = '\0';
+    char* pbegin = seq;
+    char* pend = seq + (seqlen/sizeof(char));
+    pend = remove(pbegin, pend, '\n');
+    pend = remove(pbegin, pend, '\0');
     string s = seq;
     free(seq);
-    boost::erase_all(s, "\n");
+    s.resize((pend - pbegin)/sizeof(char));
     return s;
 }
 

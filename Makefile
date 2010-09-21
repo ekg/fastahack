@@ -1,7 +1,10 @@
-fastahack: Fasta.h Fasta.cpp FastaHack.cpp
-	g++ Fasta.cpp FastaHack.cpp -o fastahack
+fastahack: Fasta.h Fasta.cpp FastaHack.cpp Split.o
+	g++ Fasta.cpp FastaHack.cpp Split.o -o fastahack
+
+Split.o: Split.h Split.cpp
+	g++ -c Split.cpp
 
 clean:
-	rm fastahack
+	rm fastahack *.o
 
 .PHONY: clean
