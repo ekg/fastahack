@@ -39,11 +39,12 @@ class FastaIndexEntry {
         void clear(void);
 };
 
-class FastaIndex: public vector<FastaIndexEntry>{
-    friend ostream& operator<<(ostream& output, const FastaIndex& i);
+class FastaIndex : public map<string, FastaIndexEntry> {
+    friend ostream& operator<<(ostream& output, FastaIndex& i);
     public:
         FastaIndex(void);
         ~FastaIndex(void);
+        vector<string> sequenceNames;
         void indexReference(string refName);
         void readIndexFile(string fname);
         void writeIndexFile(string fname);

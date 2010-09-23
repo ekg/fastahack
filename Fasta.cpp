@@ -54,10 +54,12 @@ void FastaIndex::readIndexFile(string fname) {
             if (fields.size() == 5) {  // if we don't get enough fields then there is a problem with the file
                 // note that fields[0] is the sequence name
                 char* end;
-                this->push_back(FastaIndexEntry(fields[0], atoi(fields[1].c_str()),
+                string name = split(fields[0], " \t").at(0);  // key by first token of name
+                sequenceNames.push_back(name);
+                this->insert(make_pair(name, FastaIndexEntry(fields[0], atoi(fields[1].c_str()),
                                                     strtoll(fields[2].c_str(), &end, 10),
                                                     atoi(fields[3].c_str()),
-                                                    atoi(fields[4].c_str())));
+                                                    atoi(fields[4].c_str()))));
             } else {
                 cerr << "Warning: malformed fasta index file " << fname << 
                     "does not have enough fields @ line " << linenum << endl;
@@ -71,11 +73,11 @@ void FastaIndex::readIndexFile(string fname) {
 // for consistency this should be a class method
 bool fastaIndexEntryCompare ( FastaIndexEntry a, FastaIndexEntry b) { return (a.offset<b.offset); }
 
-ostream& operator<<(ostream& output, const FastaIndex& fastaIndex) {
+ostream& operator<<(ostream& output, FastaIndex& fastaIndex) {
     vector<FastaIndexEntry> sortedIndex;
-    for(vector<FastaIndexEntry>::const_iterator it = fastaIndex.begin(); it != fastaIndex.end(); ++it)
+    for(vector<string>::const_iterator it = fastaIndex.sequenceNames.begin(); it != fastaIndex.sequenceNames.end(); ++it)
     {
-        sortedIndex.push_back(*it);
+        sortedIndex.push_back(fastaIndex[*it]);
     }
     sort(sortedIndex.begin(), sortedIndex.end(), fastaIndexEntryCompare);
     for( vector<FastaIndexEntry>::iterator fit = sortedIndex.begin(); fit != sortedIndex.end(); ++fit) {
@@ -89,7 +91,7 @@ void FastaIndex::indexReference(string refname) {
     //  track byte offset from the start of the file
     //  if line is a fasta header, take the name and dump the last sequnece to the index
     //  if line is a sequence, add it to the current sequence
-    cerr << "indexing fasta reference " << refname << endl;
+    //cerr << "indexing fasta reference " << refname << endl;
     string line;
     FastaIndexEntry entry;  // an entry buffer used in processing
     entry.clear();
@@ -174,14 +176,16 @@ void FastaIndex::indexReference(string refname) {
 }
 
 void FastaIndex::flushEntryToIndex(FastaIndexEntry& entry) {
-    this->push_back(FastaIndexEntry(entry.name, entry.length,
-                                entry.offset, entry.line_blen,
-                                entry.line_len));
+    string name = split(entry.name, " \t").at(0);  // key by first token of name
+    sequenceNames.push_back(name);
+    this->insert(make_pair(name, FastaIndexEntry(entry.name, entry.length,
+                        entry.offset, entry.line_blen,
+                        entry.line_len)));
 
 }
 
 void FastaIndex::writeIndexFile(string fname) {
-    cerr << "writing fasta index file " << fname << endl;
+    //cerr << "writing fasta index file " << fname << endl;
     ofstream file;
     file.open(fname.c_str()); 
     if (file.is_open()) {
@@ -197,9 +201,11 @@ FastaIndex::~FastaIndex(void) {
 }
 
 FastaIndexEntry FastaIndex::entry(string name) {
-    for (vector<FastaIndexEntry>::const_iterator it = this->begin(); it != this->end(); ++it) {
-        if (it->name == name)
-            return *it;
+    try {
+        return (*this)[name];
+    } catch (exception& e) {
+        cerr << e.what() << ": unable to find index entry for " << name << endl;
+        exit(1);
     }
 }
 
@@ -244,30 +250,13 @@ string FastaReference::getSequence(string seqname) {
     return s;
 }
 
+// TODO cleanup; odd function.  use a map
 string FastaReference::sequenceNameStartingWith(string seqnameStart) {
-    string teststr;
-    string result = "";
-    for(vector<FastaIndexEntry>::const_iterator it = index->begin(); it != index->end(); ++it)
-    {
-        vector<string> fields = split(it->name, "\t "); // split on ws
-        // check if the first field is the same as our startseq
-        teststr = fields.at(0);
-        if (teststr == seqnameStart) {
-            if (result == "") {
-                result = it->name;
-            } else {
-                cerr << " is not unique in fasta index" << endl;
-                exit(1);
-                //return "";
-            }
-        }
-    }
-    if (result != "") {
-        return result;
-    } else {
-        cerr << "could not find sequence named " << seqnameStart << endl;
+    try {
+        return (*index)[seqnameStart].name;
+    } catch (exception& e) {
+        cerr << e.what() << ": unable to find index entry for " << seqnameStart << endl;
         exit(1);
-        //return ""; // XXX returning an empty string is an unclear result; should raise an error!!!
     }
 }
 
