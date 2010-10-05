@@ -67,6 +67,9 @@ void FastaIndex::readIndexFile(string fname) {
                 exit(1);
             }
         }
+    } else {
+        cerr << "could not open index file " << fname << endl;
+        exit(1);
     }
 }
 
@@ -213,7 +216,10 @@ string FastaIndex::indexFileExtension() { return ".fai"; }
 
 FastaReference::FastaReference(string reffilename) {
     filename = reffilename;
-    file = fopen(filename.c_str(), "r");
+    if (!(file = fopen(filename.c_str(), "r"))) {
+        cerr << "could not open " << filename << endl;
+        exit(1);
+    }
     index = new FastaIndex();
     struct stat stFileInfo; 
     string indexFileName = filename + index->indexFileExtension(); 
