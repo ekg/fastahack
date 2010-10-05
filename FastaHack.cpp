@@ -156,7 +156,7 @@ int main (int argc, char** argv) {
             cerr << "please specify a region or sequence for which to calculate the shannon entropy" << endl;
         }
     } else {  // if no statistical processing is requested, just print the sequence
-        cerr << sequence << endl;
+        cout << sequence << endl;
     }
 
     return 0;
