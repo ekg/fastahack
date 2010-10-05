@@ -111,7 +111,7 @@ int main (int argc, char** argv) {
 
     if (buildIndex) {
         FastaIndex* fai = new FastaIndex();
-        cerr << "generating fasta index file for " << fastaFileName << endl;
+        //cerr << "generating fasta index file for " << fastaFileName << endl;
         fai->indexReference(fastaFileName);
         fai->writeIndexFile((string) fastaFileName + fai->indexFileExtension());
     }
@@ -149,14 +149,16 @@ int main (int argc, char** argv) {
 
     }
 
-    if (printEntropy) {
-        if (sequence.size() > 0) {
-            cout << shannon_H((char*) sequence.c_str(), sequence.size()) << endl;
-        } else {
-            cerr << "please specify a region or sequence for which to calculate the shannon entropy" << endl;
+    if (sequence != "") {
+        if (printEntropy) {
+            if (sequence.size() > 0) {
+                cout << shannon_H((char*) sequence.c_str(), sequence.size()) << endl;
+            } else {
+                cerr << "please specify a region or sequence for which to calculate the shannon entropy" << endl;
+            }
+        } else {  // if no statistical processing is requested, just print the sequence
+            cout << sequence << endl;
         }
-    } else {  // if no statistical processing is requested, just print the sequence
-        cout << sequence << endl;
     }
 
     return 0;
