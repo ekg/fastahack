@@ -18,7 +18,7 @@
 #include <algorithm>
 #include "LargeFileSupport.h"
 #include <sys/stat.h>
-#include "Split.h"
+#include "split.h"
 #include <stdlib.h>
 #include <ctype.h>
 #include <unistd.h>
