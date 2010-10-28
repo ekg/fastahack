@@ -13,8 +13,10 @@ void printSummary() {
          << "    -e, --entropy        print the shannon entropy of the specified region" << endl
          << endl
          << "REGION is of the form <seq>, <seq>:<start>..<end>, <seq1>:<start>..<seq2>:<end>" << endl
-         << "where start and end are 1-based.  Specifying a sequence name alone will return" << endl
-         << "the entire sequence, while specifying a range will return that range." << endl
+         << "where start and end are 1-based, and the region does not include the end base." << endl
+         << "Specifying a sequence name alone will return the entire sequence, specifying" << endl
+         << "range will return that range, and specifying a single coordinate pair, e.g." << endl
+         << "<seq>:<start> will return just that base." << endl
          << endl
          << "author: Erik Garrison <erik.garrison@bc.edu>" << endl;
 }
