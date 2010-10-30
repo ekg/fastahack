@@ -41,7 +41,7 @@ public:
             size_t foundRangeDots = region.find("..", foundFirstColon);
             if (foundRangeDots == string::npos) {
                 startPos = atoi(region.substr(foundFirstColon + 1).c_str());
-                stopPos = startPos + 1; // just print one base if we don't give an end
+                stopPos = startPos; // just print one base if we don't give an end
             } else {
                 startPos = atoi(region.substr(foundFirstColon + 1, foundRangeDots - foundRangeDots - 1).c_str());
                 stopPos = atoi(region.substr(foundRangeDots + 2).c_str()); // to the start of this chromosome
@@ -50,7 +50,11 @@ public:
     }
 
     int length(void) {
-        return stopPos - startPos;
+        if (stopPos > 0) {
+            return stopPos - startPos + 1;
+        } else {
+            return 1;
+        }
     }
 
 };
@@ -167,7 +171,7 @@ int main (int argc, char** argv) {
         if (target.startPos == -1) {
             sequence = fr->getSequence(target.startSeq);
         } else {
-            sequence = fr->getSubSequence(target.startSeq, target.startPos - 1, target.length() + 1);
+            sequence = fr->getSubSequence(target.startSeq, target.startPos - 1, target.length());
         }
 
     }
@@ -179,7 +183,7 @@ int main (int argc, char** argv) {
             if (target.startPos == -1) {
                 cout << fr->getSequence(target.startSeq) << endl;
             } else {
-                cout << fr->getSubSequence(target.startSeq, target.startPos - 1, target.length() + 1) << endl;
+                cout << fr->getSubSequence(target.startSeq, target.startPos - 1, target.length()) << endl;
             }
         }
     } else {
