@@ -58,6 +58,7 @@ class FastaReference {
     public:
         FastaReference(string reffilename);
         string filename;
+        FastaReference();
         ~FastaReference(void);
         FILE* file;
         FastaIndex* index;
