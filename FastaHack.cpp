@@ -164,14 +164,16 @@ int main (int argc, char** argv) {
     
     string sequence;  // holds sequence so we can optionally process it
 
-    FastaReference* fr = new FastaReference(fastaFileName);
+    FastaReference fr;
+    fr.open(fastaFileName);
+
     if (region != "") {
         FastaRegion target(region);
 
         if (target.startPos == -1) {
-            sequence = fr->getSequence(target.startSeq);
+            sequence = fr.getSequence(target.startSeq);
         } else {
-            sequence = fr->getSubSequence(target.startSeq, target.startPos - 1, target.length());
+            sequence = fr.getSubSequence(target.startSeq, target.startPos - 1, target.length());
         }
 
     }
@@ -181,9 +183,9 @@ int main (int argc, char** argv) {
         while (getline(cin, regionstr)) {
             FastaRegion target(regionstr);
             if (target.startPos == -1) {
-                cout << fr->getSequence(target.startSeq) << endl;
+                cout << fr.getSequence(target.startSeq) << endl;
             } else {
-                cout << fr->getSubSequence(target.startSeq, target.startPos - 1, target.length()) << endl;
+                cout << fr.getSubSequence(target.startSeq, target.startPos - 1, target.length()) << endl;
             }
         }
     } else {

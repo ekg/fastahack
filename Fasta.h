@@ -56,10 +56,11 @@ class FastaIndex : public map<string, FastaIndexEntry> {
 
 class FastaReference {
     public:
-        void open(string reffilename);
+        void open(string reffilename, bool mmap = false);
         string filename;
         ~FastaReference(void);
         FILE* file;
+        void* mm_file;
         FastaIndex* index;
         vector<FastaIndexEntry> findSequencesStartingWith(string seqnameStart);
         string getSequence(string seqname);
