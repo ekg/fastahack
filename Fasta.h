@@ -56,9 +56,8 @@ class FastaIndex : public map<string, FastaIndexEntry> {
 
 class FastaReference {
     public:
-        FastaReference(string reffilename);
+        void open(string reffilename);
         string filename;
-        FastaReference();
         ~FastaReference(void);
         FILE* file;
         FastaIndex* index;
