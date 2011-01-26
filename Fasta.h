@@ -18,6 +18,7 @@
 #include <algorithm>
 #include "LargeFileSupport.h"
 #include <sys/stat.h>
+#include <sys/mman.h>
 #include "split.h"
 #include <stdlib.h>
 #include <ctype.h>
@@ -56,11 +57,14 @@ class FastaIndex : public map<string, FastaIndexEntry> {
 
 class FastaReference {
     public:
-        void open(string reffilename, bool mmap = false);
+        void open(string reffilename, bool usemmap = false);
+        bool usingmmap;
         string filename;
+        FastaReference(void) : usingmmap(false) { }
         ~FastaReference(void);
         FILE* file;
-        void* mm_file;
+        void* filemm;
+        size_t filesize;
         FastaIndex* index;
         vector<FastaIndexEntry> findSequencesStartingWith(string seqnameStart);
         string getSequence(string seqname);

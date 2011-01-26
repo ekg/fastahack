@@ -72,6 +72,7 @@ int main (int argc, char** argv) {
     bool buildIndex = false;  // flag to force index building
     bool printEntropy = false;  // entropy printing
     bool readRegionsFromStdin = false;
+    bool usemmap = false;
     //bool printLength = false;
     string region;
 
@@ -89,12 +90,13 @@ int main (int argc, char** argv) {
             {"entropy", no_argument, 0, 'e'},
             {"region", required_argument, 0, 'r'},
             {"stdin", no_argument, 0, 'c'},
+            {"mmap", no_argument, 0, 'm'},
             {0, 0, 0, 0}
         };
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        c = getopt_long (argc, argv, "hcier:",
+        c = getopt_long (argc, argv, "hcimer:",
                          long_options, &option_index);
 
       /* Detect the end of the options. */
@@ -127,6 +129,10 @@ int main (int argc, char** argv) {
  
           case 'r':
             region = optarg;
+            break;
+
+          case 'm':
+            usemmap = true;
             break;
 
           case 'h':
@@ -165,7 +171,7 @@ int main (int argc, char** argv) {
     string sequence;  // holds sequence so we can optionally process it
 
     FastaReference fr;
-    fr.open(fastaFileName);
+    fr.open(fastaFileName, usemmap);
 
     if (region != "") {
         FastaRegion target(region);

@@ -217,12 +217,7 @@ FastaIndexEntry FastaIndex::entry(string name) {
 
 string FastaIndex::indexFileExtension() { return ".fai"; }
 
-/*
-FastaReference::FastaReference(string reffilename) {
-}
-*/
-
-void FastaReference::open(string reffilename) {
+void FastaReference::open(string reffilename, bool usemmap) {
     filename = reffilename;
     if (!(file = fopen(filename.c_str(), "r"))) {
         cerr << "could not open " << filename << endl;
@@ -239,10 +234,23 @@ void FastaReference::open(string reffilename) {
         index->indexReference(filename);
         index->writeIndexFile(indexFileName);
     }
+    if (usemmap) {
+        usingmmap = true;
+        int fd = fileno(file);
+        struct stat sb;
+        if (fstat(fd, &sb) == -1)
+            cerr << "could not stat file" << filename << endl;
+        filesize = sb.st_size;
+        // map the whole file
+        filemm = mmap(NULL, filesize, PROT_READ, MAP_SHARED, fd, 0);
+    }
 }
 
 FastaReference::~FastaReference(void) {
     fclose(file);
+    if (usingmmap) {
+        munmap(filemm, filesize);
+    }
     delete index;
 }
 
@@ -251,8 +259,12 @@ string FastaReference::getSequence(string seqname) {
     int newlines_in_sequence = entry.length / entry.line_blen;
     int seqlen = newlines_in_sequence  + entry.length;
     char* seq = (char*) calloc (seqlen + 1, sizeof(char));
-    fseek64(file, entry.offset, SEEK_SET);
-    fread(seq, sizeof(char), seqlen, file);
+    if (usingmmap) {
+        memcpy(seq, (char*) filemm + entry.offset, seqlen);
+    } else {
+        fseek64(file, entry.offset, SEEK_SET);
+        fread(seq, sizeof(char), seqlen, file);
+    }
     seq[seqlen] = '\0';
     char* pbegin = seq;
     char* pend = seq + (seqlen/sizeof(char));
@@ -289,8 +301,12 @@ string FastaReference::getSubSequence(string seqname, int start, int length) {
     int newlines_inside = newlines_by_end - newlines_before;
     int seqlen = length + newlines_inside;
     char* seq = (char*) calloc (seqlen + 1, sizeof(char));
-    fseek64(file, (off_t) (entry.offset + newlines_before + start), SEEK_SET);
-    fread(seq, sizeof(char), (off_t) seqlen, file);
+    if (usingmmap) {
+        memcpy(seq, (char*) filemm + entry.offset + newlines_before + start, seqlen);
+    } else {
+        fseek64(file, (off_t) (entry.offset + newlines_before + start), SEEK_SET);
+        fread(seq, sizeof(char), (off_t) seqlen, file);
+    }
     seq[seqlen] = '\0';
     char* pbegin = seq;
     char* pend = seq + (seqlen/sizeof(char));
