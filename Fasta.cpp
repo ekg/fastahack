@@ -45,6 +45,7 @@ FastaIndex::FastaIndex(void)
 void FastaIndex::readIndexFile(string fname) {
     string line;
     long long linenum = 0;
+    unsigned int seqid = 0;
     indexFile.open(fname.c_str(), ifstream::in);
     if (indexFile.is_open()) {
         while (getline (indexFile, line)) {
@@ -57,6 +58,7 @@ void FastaIndex::readIndexFile(string fname) {
                 char* end;
                 string name = split(fields[0], " \t").at(0);  // key by first token of name
                 sequenceNames.push_back(name);
+                sequenceID[name] = seqid++;
                 this->insert(make_pair(name, FastaIndexEntry(fields[0], atoi(fields[1].c_str()),
                                                     strtoll(fields[2].c_str(), &end, 10),
                                                     atoi(fields[3].c_str()),
@@ -252,6 +254,10 @@ FastaReference::~FastaReference(void) {
         munmap(filemm, filesize);
     }
     delete index;
+}
+
+unsigned int FastaReference::getSequenceID(string seqname) {
+    return index->sequenceID[seqname];
 }
 
 string FastaReference::getSequence(string seqname) {

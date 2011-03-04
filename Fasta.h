@@ -46,6 +46,7 @@ class FastaIndex : public map<string, FastaIndexEntry> {
         FastaIndex(void);
         ~FastaIndex(void);
         vector<string> sequenceNames;
+        map<string, unsigned int> sequenceID;
         void indexReference(string refName);
         void readIndexFile(string fname);
         void writeIndexFile(string fname);
@@ -72,6 +73,7 @@ class FastaReference {
         // void getSequence(string seqname, string& sequence);
         string getSubSequence(string seqname, int start, int length);
         string sequenceNameStartingWith(string seqnameStart);
+        unsigned int getSequenceID(string seqname);
         long unsigned int sequenceLength(string seqname);
 };
 

@@ -11,7 +11,7 @@ void printSummary() {
          << "    -r, --region REGION  print the specified region" << endl
          << "    -c, --stdin          read a stream of line-delimited region specifiers on stdin" << endl
          << "                         and print the corresponding sequence for each on stdout" << endl
-         //<< "    -l, --length         print the length of the specified region or sequence" << endl
+         << "    -m, --mmap           jump through the reference using mmap instead of fseek" << endl
          << "    -e, --entropy        print the shannon entropy of the specified region" << endl
          << endl
          << "REGION is of the form <seq>, <seq>:<start>..<end>, <seq1>:<start>..<seq2>:<end>" << endl
