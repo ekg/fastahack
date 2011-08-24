@@ -25,11 +25,11 @@ FastaIndexEntry::~FastaIndexEntry(void)
 void FastaIndexEntry::clear(void)
 {
     name = "";
-    length = NULL;
+    length = 0;
     offset = -1;  // no real offset will ever be below 0, so this allows us to
                   // check if we have already recorded a real offset
-    line_blen = NULL;
-    line_len = NULL;
+    line_blen = 0;
+    line_len = 0;
 }
 
 ostream& operator<<(ostream& output, const FastaIndexEntry& e) {
@@ -45,7 +45,6 @@ FastaIndex::FastaIndex(void)
 void FastaIndex::readIndexFile(string fname) {
     string line;
     long long linenum = 0;
-    unsigned int seqid = 0;
     indexFile.open(fname.c_str(), ifstream::in);
     if (indexFile.is_open()) {
         while (getline (indexFile, line)) {
@@ -58,7 +57,6 @@ void FastaIndex::readIndexFile(string fname) {
                 char* end;
                 string name = split(fields[0], " \t").at(0);  // key by first token of name
                 sequenceNames.push_back(name);
-                sequenceID[name] = seqid++;
                 this->insert(make_pair(name, FastaIndexEntry(fields[0], atoi(fields[1].c_str()),
                                                     strtoll(fields[2].c_str(), &end, 10),
                                                     atoi(fields[3].c_str()),
@@ -89,7 +87,6 @@ ostream& operator<<(ostream& output, FastaIndex& fastaIndex) {
     for( vector<FastaIndexEntry>::iterator fit = sortedIndex.begin(); fit != sortedIndex.end(); ++fit) {
         output << *fit << endl;
     }
-    return output;
 }
 
 void FastaIndex::indexReference(string refname) {
@@ -219,7 +216,12 @@ FastaIndexEntry FastaIndex::entry(string name) {
 
 string FastaIndex::indexFileExtension() { return ".fai"; }
 
-void FastaReference::open(string reffilename, bool usemmap) {
+/*
+FastaReference::FastaReference(string reffilename) {
+}
+*/
+
+void FastaReference::open(string reffilename) {
     filename = reffilename;
     if (!(file = fopen(filename.c_str(), "r"))) {
         cerr << "could not open " << filename << endl;
@@ -236,28 +238,11 @@ void FastaReference::open(string reffilename, bool usemmap) {
         index->indexReference(filename);
         index->writeIndexFile(indexFileName);
     }
-    if (usemmap) {
-        usingmmap = true;
-        int fd = fileno(file);
-        struct stat sb;
-        if (fstat(fd, &sb) == -1)
-            cerr << "could not stat file" << filename << endl;
-        filesize = sb.st_size;
-        // map the whole file
-        filemm = mmap(NULL, filesize, PROT_READ, MAP_SHARED, fd, 0);
-    }
 }
 
 FastaReference::~FastaReference(void) {
     fclose(file);
-    if (usingmmap) {
-        munmap(filemm, filesize);
-    }
     delete index;
-}
-
-unsigned int FastaReference::getSequenceID(string seqname) {
-    return index->sequenceID[seqname];
 }
 
 string FastaReference::getSequence(string seqname) {
@@ -265,12 +250,8 @@ string FastaReference::getSequence(string seqname) {
     int newlines_in_sequence = entry.length / entry.line_blen;
     int seqlen = newlines_in_sequence  + entry.length;
     char* seq = (char*) calloc (seqlen + 1, sizeof(char));
-    if (usingmmap) {
-        memcpy(seq, (char*) filemm + entry.offset, seqlen);
-    } else {
-        fseek64(file, entry.offset, SEEK_SET);
-        fread(seq, sizeof(char), seqlen, file);
-    }
+    fseek64(file, entry.offset, SEEK_SET);
+    fread(seq, sizeof(char), seqlen, file);
     seq[seqlen] = '\0';
     char* pbegin = seq;
     char* pend = seq + (seqlen/sizeof(char));
@@ -307,12 +288,8 @@ string FastaReference::getSubSequence(string seqname, int start, int length) {
     int newlines_inside = newlines_by_end - newlines_before;
     int seqlen = length + newlines_inside;
     char* seq = (char*) calloc (seqlen + 1, sizeof(char));
-    if (usingmmap) {
-        memcpy(seq, (char*) filemm + entry.offset + newlines_before + start, seqlen);
-    } else {
-        fseek64(file, (off_t) (entry.offset + newlines_before + start), SEEK_SET);
-        fread(seq, sizeof(char), (off_t) seqlen, file);
-    }
+    fseek64(file, (off_t) (entry.offset + newlines_before + start), SEEK_SET);
+    fread(seq, sizeof(char), (off_t) seqlen, file);
     seq[seqlen] = '\0';
     char* pbegin = seq;
     char* pend = seq + (seqlen/sizeof(char));
