@@ -11,7 +11,6 @@ void printSummary() {
          << "    -r, --region REGION  print the specified region" << endl
          << "    -c, --stdin          read a stream of line-delimited region specifiers on stdin" << endl
          << "                         and print the corresponding sequence for each on stdout" << endl
-         << "    -m, --mmap           jump through the reference using mmap instead of fseek" << endl
          << "    -e, --entropy        print the shannon entropy of the specified region" << endl
          << endl
          << "REGION is of the form <seq>, <seq>:<start>..<end>, <seq1>:<start>..<seq2>:<end>" << endl
@@ -72,7 +71,6 @@ int main (int argc, char** argv) {
     bool buildIndex = false;  // flag to force index building
     bool printEntropy = false;  // entropy printing
     bool readRegionsFromStdin = false;
-    bool usemmap = false;
     //bool printLength = false;
     string region;
 
@@ -90,13 +88,12 @@ int main (int argc, char** argv) {
             {"entropy", no_argument, 0, 'e'},
             {"region", required_argument, 0, 'r'},
             {"stdin", no_argument, 0, 'c'},
-            {"mmap", no_argument, 0, 'm'},
             {0, 0, 0, 0}
         };
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        c = getopt_long (argc, argv, "hcimer:",
+        c = getopt_long (argc, argv, "hcier:",
                          long_options, &option_index);
 
       /* Detect the end of the options. */
@@ -129,10 +126,6 @@ int main (int argc, char** argv) {
  
           case 'r':
             region = optarg;
-            break;
-
-          case 'm':
-            usemmap = true;
             break;
 
           case 'h':
@@ -171,7 +164,7 @@ int main (int argc, char** argv) {
     string sequence;  // holds sequence so we can optionally process it
 
     FastaReference fr;
-    fr.open(fastaFileName, usemmap);
+    fr.open(fastaFileName);
 
     if (region != "") {
         FastaRegion target(region);

@@ -58,7 +58,7 @@ class FastaIndex : public map<string, FastaIndexEntry> {
 
 class FastaReference {
     public:
-        void open(string reffilename, bool usemmap = false);
+        void open(string reffilename);
         bool usingmmap;
         string filename;
         FastaReference(void) : usingmmap(false) { }
