@@ -1,5 +1,6 @@
 #pragma once
 
+#define _FILE_OFFSET_BITS 64
 #ifdef WIN32
 #define ftell64(a)     _ftelli64(a)
 #define fseek64(a,b,c) _fseeki64(a,b,c)
