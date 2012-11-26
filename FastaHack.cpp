@@ -13,8 +13,10 @@ void printSummary() {
          << "                         and print the corresponding sequence for each on stdout" << endl
          << "    -e, --entropy        print the shannon entropy of the specified region" << endl
          << endl
-         << "REGION is of the form <seq>, <seq>:<start>..<end>, <seq1>:<start>..<seq2>:<end>" << endl
+         << "REGION is of the form <seq>, <seq>:<start>[sep]<end>, <seq1>:<start>[sep]<seq2>:<end>" << endl
          << "where start and end are 1-based, and the region includes the end position." << endl
+	 << "[sep] is \"-\" or \"..\"" << endl
+	 << endl
          << "Specifying a sequence name alone will return the entire sequence, specifying" << endl
          << "range will return that range, and specifying a single coordinate pair, e.g." << endl
          << "<seq>:<start> will return just that base." << endl
@@ -38,12 +40,18 @@ public:
         } else {
             startSeq = region.substr(0, foundFirstColon);
             size_t foundRangeDots = region.find("..", foundFirstColon);
-            if (foundRangeDots == string::npos) {
+	    size_t foundRangeDash = region.find("-", foundFirstColon);
+            if (foundRangeDots == string::npos && foundRangeDash == string::npos) {
                 startPos = atoi(region.substr(foundFirstColon + 1).c_str());
                 stopPos = startPos; // just print one base if we don't give an end
             } else {
-                startPos = atoi(region.substr(foundFirstColon + 1, foundRangeDots - foundRangeDots - 1).c_str());
-                stopPos = atoi(region.substr(foundRangeDots + 2).c_str()); // to the start of this chromosome
+		if (foundRangeDash == string::npos) {
+		    startPos = atoi(region.substr(foundFirstColon + 1, foundRangeDots - foundRangeDots - 1).c_str());
+		    stopPos = atoi(region.substr(foundRangeDots + 2).c_str()); // to the start of this chromosome
+		} else {
+		    startPos = atoi(region.substr(foundFirstColon + 1, foundRangeDash - foundRangeDash - 1).c_str());
+		    stopPos = atoi(region.substr(foundRangeDash + 1).c_str()); // to the start of this chromosome
+		}
             }
         }
     }
