@@ -1,2 +1,7 @@
 *.o
 fastahack
+libfastahack.a
+CMakeFiles
+CMakeCache.txt
+cmake_install.cmake
+Makefile
