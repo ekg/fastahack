@@ -1,7 +1,9 @@
 #include "Fasta.h"
 #include <stdlib.h>
 #include <getopt.h>
+extern "C" {
 #include "disorder.h"
+}
 
 void printSummary() {
     cerr << "usage: fastahack [options] <fasta reference>" << endl

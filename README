@@ -25,6 +25,15 @@ extraction without RAM-intensive file loading operations.  This makes fastahack
 a useful tool for bioinformaticists who need to quickly extract many
 subsequences from a reference FASTA sequence.
 
+Build:
+
+Cmake is required to build this project. Issue the following commands from the
+fastahack director:
+
+	% cmake .
+	% make
+	
+
 
 Notes:
 
