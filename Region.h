@@ -1,6 +1,11 @@
 #ifndef FASTA_REGION_H
 #define FASTA_REGION_H
 
+#include <string>
+#include <stdlib.h>
+
+using namespace std;
+
 class FastaRegion {
 public:
     string startSeq;
