@@ -73,6 +73,7 @@ class FastaReference {
         // potentially useful for performance, investigate
         // void getSequence(string seqname, string& sequence);
         string getSubSequence(string seqname, int start, int length);
+	string getTargetSubSequence(FastaRegion& target);
         string sequenceNameStartingWith(string seqnameStart);
         unsigned int getSequenceID(string seqname);
         long unsigned int sequenceLength(string seqname);

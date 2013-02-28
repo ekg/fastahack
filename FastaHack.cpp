@@ -135,13 +135,7 @@ int main (int argc, char** argv) {
 
     if (region != "") {
         FastaRegion target(region);
-
-        if (target.startPos == -1) {
-            sequence = fr.getSequence(target.startSeq);
-        } else {
-            sequence = fr.getSubSequence(target.startSeq, target.startPos - 1, target.length());
-        }
-
+	sequence = fr.getTargetSubSequence(target);
     }
 
     if (readRegionsFromStdin) {
