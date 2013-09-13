@@ -13,11 +13,12 @@ void printSummary() {
          << "    -c, --stdin          read a stream of line-delimited region specifiers on stdin" << endl
          << "                         and print the corresponding sequence for each on stdout" << endl
          << "    -e, --entropy        print the shannon entropy of the specified region" << endl
+         << "    -d, --dump           print the fasta file in the form 'seq_name <tab> sequence'" << endl
          << endl
          << "REGION is of the form <seq>, <seq>:<start>[sep]<end>, <seq1>:<start>[sep]<seq2>:<end>" << endl
          << "where start and end are 1-based, and the region includes the end position." << endl
-	 << "[sep] is \"-\" or \"..\"" << endl
-	 << endl
+         << "[sep] is \"-\" or \"..\"" << endl
+         << endl
          << "Specifying a sequence name alone will return the entire sequence, specifying" << endl
          << "range will return that range, and specifying a single coordinate pair, e.g." << endl
          << "<seq>:<start> will return just that base." << endl
@@ -34,6 +35,7 @@ int main (int argc, char** argv) {
     string longseqname;
     long long start;
     long long length;
+    bool dump = false;
 
     bool buildIndex = false;  // flag to force index building
     bool printEntropy = false;  // entropy printing
@@ -60,7 +62,7 @@ int main (int argc, char** argv) {
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        c = getopt_long (argc, argv, "hcier:",
+        c = getopt_long (argc, argv, "hciedr:",
                          long_options, &option_index);
 
       /* Detect the end of the options. */
@@ -94,6 +96,10 @@ int main (int argc, char** argv) {
           case 'r':
             region = optarg;
             break;
+
+            case 'd':
+                dump = true;
+                break;
 
           case 'h':
             printSummary();
@@ -133,9 +139,16 @@ int main (int argc, char** argv) {
     FastaReference fr;
     fr.open(fastaFileName);
 
+    if (dump) {
+        for (vector<string>::iterator s = fr.index->sequenceNames.begin(); s != fr.index->sequenceNames.end(); ++s) {
+            cout << *s << "\t" << fr.getSequence(*s) << endl;
+        }
+        return 0;
+    }
+
     if (region != "") {
         FastaRegion target(region);
-	sequence = fr.getTargetSubSequence(target);
+        sequence = fr.getTargetSubSequence(target);
     }
 
     if (readRegionsFromStdin) {

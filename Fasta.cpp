@@ -275,14 +275,15 @@ string FastaReference::sequenceNameStartingWith(string seqnameStart) {
 
 string FastaReference::getTargetSubSequence(FastaRegion& target) {
     if (target.startPos == -1) {
-	return getSequence(target.startSeq);
+        return getSequence(target.startSeq);
     } else {
-	return getSubSequence(target.startSeq, target.startPos - 1, target.length());
+        return getSubSequence(target.startSeq, target.startPos - 1, target.length());
     }
 }
 
 string FastaReference::getSubSequence(string seqname, int start, int length) {
     FastaIndexEntry entry = index->entry(seqname);
+    length = min(length, entry.length - start);
     if (start < 0 || length < 1) {
         cerr << "Error: cannot construct subsequence with negative offset or length < 1" << endl;
         exit(1);
