@@ -251,15 +251,17 @@ string FastaReference::getSequence(string seqname) {
     int seqlen = newlines_in_sequence  + entry.length;
     char* seq = (char*) calloc (seqlen + 1, sizeof(char));
     fseek64(file, entry.offset, SEEK_SET);
-    fread(seq, sizeof(char), seqlen, file);
-    seq[seqlen] = '\0';
-    char* pbegin = seq;
-    char* pend = seq + (seqlen/sizeof(char));
-    pend = remove(pbegin, pend, '\n');
-    pend = remove(pbegin, pend, '\0');
-    string s = seq;
-    free(seq);
-    s.resize((pend - pbegin)/sizeof(char));
+    string s;
+    if (fread(seq, sizeof(char), seqlen, file)) {
+        seq[seqlen] = '\0';
+        char* pbegin = seq;
+        char* pend = seq + (seqlen/sizeof(char));
+        pend = remove(pbegin, pend, '\n');
+        pend = remove(pbegin, pend, '\0');
+        s = seq;
+        free(seq);
+        s.resize((pend - pbegin)/sizeof(char));
+    }
     return s;
 }
 
@@ -298,15 +300,17 @@ string FastaReference::getSubSequence(string seqname, int start, int length) {
     int seqlen = length + newlines_inside;
     char* seq = (char*) calloc (seqlen + 1, sizeof(char));
     fseek64(file, (off_t) (entry.offset + newlines_before + start), SEEK_SET);
-    fread(seq, sizeof(char), (off_t) seqlen, file);
-    seq[seqlen] = '\0';
-    char* pbegin = seq;
-    char* pend = seq + (seqlen/sizeof(char));
-    pend = remove(pbegin, pend, '\n');
-    pend = remove(pbegin, pend, '\0');
-    string s = seq;
-    free(seq);
-    s.resize((pend - pbegin)/sizeof(char));
+    string s;
+    if (fread(seq, sizeof(char), (off_t) seqlen, file)) {
+        seq[seqlen] = '\0';
+        char* pbegin = seq;
+        char* pend = seq + (seqlen/sizeof(char));
+        pend = remove(pbegin, pend, '\n');
+        pend = remove(pbegin, pend, '\0');
+        s = seq;
+        free(seq);
+        s.resize((pend - pbegin)/sizeof(char));
+    }
     return s;
 }
 
