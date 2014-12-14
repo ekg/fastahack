@@ -18,7 +18,7 @@ Features:
  - FASTA index (.fai) generation for FASTA files
  - Sequence extraction
  - Subsequence extraction
- - Sequence statistics (TODO: currently only length is provided)
+ - Sequence statistics (TODO: currently only entropy is provided)
 
 Sequence and subsequence extraction use fseek64 to provide fastest-possible
 extraction without RAM-intensive file loading operations.  This makes fastahack
@@ -39,18 +39,25 @@ simply as "8", provided "8" is a unique first-field name in the FASTA file.
 Thus, to extract 20bp starting at position 323202 in chromosome 8 from the
 human reference:
 
-  % fastahack subsequence h.sapiens.fasta 8 323202 20
+  % fastahack -r 8:323202..20 h.sapiens.fasta
   ACATTGTAATAGATCTCAGA
 
 Usage information is provided by running fastahack with no arguments:
 
-  % fastahack
-  usage: fastahack <command> [options]
-  actions:
-      index <fasta reference>
-      sequence <fasta reference> <sequence name>
-      subsequence <fasta reference> <sequence name> <0-based start> <length>
-      stats <fasta reference> <sequence name>  (returns sequence length)
+  % usage: fastahack [options] <fasta reference>
+  
+  options:
+      -i, --index          generate fasta index <fasta reference>.fai
+      -r, --region REGION  print the specified region
+      -c, --stdin          read a stream of line-delimited region specifiers on stdin
+                           and print the corresponding sequence for each on stdout
+      -e, --entropy        print the shannon entropy of the specified region
+  
+  REGION is of the form <seq>, <seq>:<start>..<end>, <seq1>:<start>..<seq2>:<end>
+  where start and end are 1-based, and the region includes the end position.
+  Specifying a sequence name alone will return the entire sequence, specifying
+  range will return that range, and specifying a single coordinate pair, e.g.
+  <seq>:<start> will return just that base.
 
 
 Limitations:
