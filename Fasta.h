@@ -62,7 +62,10 @@ class FastaReference {
         void open(string reffilename);
         bool usingmmap;
         string filename;
-        FastaReference(void) : usingmmap(false) { }
+        FastaReference(void) : usingmmap(false) {
+	  file  = NULL;
+	  index = NULL;
+	}
         ~FastaReference(void);
         FILE* file;
         void* filemm;
