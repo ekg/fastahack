@@ -241,8 +241,10 @@ void FastaReference::open(string reffilename) {
 }
 
 FastaReference::~FastaReference(void) {
-    fclose(file);
-    delete index;
+    if (file != NULL)
+      fclose(file);
+    if (index != NULL)
+      delete index;
 }
 
 string FastaReference::getSequence(string seqname) {
