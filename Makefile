@@ -2,11 +2,14 @@
 # Use ?= to allow overriding from the env or command-line
 CXX ?=		g++
 CFLAGS ?=	-O3
+PREFIX ?=	./stage
 
 # Required flags that we shouldn't override
 CFLAGS +=	-D_FILE_OFFSET_BITS=64
 
 OBJS =	Fasta.o FastaHack.o split.o disorder.o
+
+all:	fastahack
 
 fastahack: $(OBJS)
 	$(CXX) $(CFLAGS) $(OBJS) -o fastahack
@@ -23,7 +26,11 @@ split.o: split.h split.cpp
 disorder.o: disorder.c disorder.h
 	$(CXX) $(CFLAGS) -c disorder.c
 
+install: fastahack
+	install -d ${DESTDIR}${PREFIX}/bin
+	install -c fastahack ${DESTDIR}${PREFIX}/bin
+
 clean:
-	rm -f fastahack *.o
+	rm -rf fastahack *.o stage
 
 .PHONY: clean
