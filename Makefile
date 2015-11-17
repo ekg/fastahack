@@ -1,8 +1,18 @@
-CXX=g++
-CFLAGS=-O3 -D_FILE_OFFSET_BITS=64
 
-fastahack: Fasta.o FastaHack.cpp split.o disorder.o
-	$(CXX) $(CFLAGS) Fasta.o FastaHack.cpp split.o disorder.o -o fastahack
+# Use ?= to allow overriding from the env or command-line
+CXX ?=		g++
+CFLAGS ?=	-O3
+
+# Required flags that we shouldn't override
+CFLAGS +=	-D_FILE_OFFSET_BITS=64
+
+OBJS =	Fasta.o FastaHack.o split.o disorder.o
+
+fastahack: $(OBJS)
+	$(CXX) $(CFLAGS) $(OBJS) -o fastahack
+
+FastaHack.o: Fasta.h FastaHack.cpp
+	$(CXX) $(CFLAGS) -c FastaHack.cpp
 
 Fasta.o: Fasta.h Fasta.cpp
 	$(CXX) $(CFLAGS) -c Fasta.cpp
