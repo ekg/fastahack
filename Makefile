@@ -3,6 +3,9 @@
 CXX ?=		g++
 CFLAGS ?=	-O3
 PREFIX ?=	./stage
+STRIP_CMD ?=	strip
+INSTALL ?=	install -c
+MKDIR ?=	mkdir -p
 
 # Required flags that we shouldn't override
 CFLAGS +=	-D_FILE_OFFSET_BITS=64
@@ -27,8 +30,11 @@ disorder.o: disorder.c disorder.h
 	$(CXX) $(CFLAGS) -c disorder.c
 
 install: fastahack
-	install -d ${DESTDIR}${PREFIX}/bin
-	install -c fastahack ${DESTDIR}${PREFIX}/bin
+	$(MKDIR) $(DESTDIR)$(PREFIX)/bin
+	$(INSTALL) fastahack $(DESTDIR)$(PREFIX)/bin
+
+install-strip: install
+	$(STRIP_CMD) $(DESTDIR)$(PREFIX)/bin/fastahack
 
 clean:
 	rm -rf fastahack *.o stage
