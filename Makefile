@@ -43,8 +43,10 @@ disorder.o: disorder.c disorder.h
 
 install: all
 	$(MKDIR) $(DESTDIR)$(PREFIX)/bin
+	$(MKDIR) $(DESTDIR)$(PREFIX)/include/fastahack
 	$(MKDIR) $(DESTDIR)$(PREFIX)/lib
 	$(INSTALL) $(BIN) $(DESTDIR)$(PREFIX)/bin
+	$(INSTALL) *.h $(DESTDIR)$(PREFIX)/include/fastahack
 	$(INSTALL) $(LIB) $(DESTDIR)$(PREFIX)/lib
 
 install-strip: install
