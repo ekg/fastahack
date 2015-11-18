@@ -23,7 +23,7 @@ MAIN =	FastaHack.o
 all:	$(BIN) $(LIB)
 
 $(BIN): $(OBJS) $(MAIN)
-	$(CXX) $(CXXFLAGS) $(OBJS) $(MAIN) -o fastahack
+	$(CXX) $(CXXFLAGS) $(OBJS) $(MAIN) -o $(BIN)
 
 $(LIB): $(OBJS)
 	$(AR) -rs $(LIB) $(OBJS)
@@ -40,14 +40,14 @@ split.o: split.h split.cpp
 disorder.o: disorder.c disorder.h
 	$(CXX) $(CXXFLAGS) -c disorder.c
 
-install: fastahack
+install: all
 	$(MKDIR) $(DESTDIR)$(PREFIX)/bin
 	$(MKDIR) $(DESTDIR)$(PREFIX)/lib
-	$(INSTALL) fastahack $(DESTDIR)$(PREFIX)/bin
-	$(INSTALL) libfastahack.a $(DESTDIR)$(PREFIX)/lib
+	$(INSTALL) $(BIN) $(DESTDIR)$(PREFIX)/bin
+	$(INSTALL) $(LIB) $(DESTDIR)$(PREFIX)/lib
 
 install-strip: install
-	$(STRIP_CMD) $(DESTDIR)$(PREFIX)/bin/fastahack
+	$(STRIP_CMD) $(DESTDIR)$(PREFIX)/bin/$(BIN)
 
 clean:
 	rm -rf $(BIN) $(LIB) $(OBJS) $(DESTDIR)
