@@ -42,7 +42,9 @@ disorder.o: disorder.c disorder.h
 
 install: fastahack
 	$(MKDIR) $(DESTDIR)$(PREFIX)/bin
+	$(MKDIR) $(DESTDIR)$(PREFIX)/lib
 	$(INSTALL) fastahack $(DESTDIR)$(PREFIX)/bin
+	$(INSTALL) libfastahack.a $(DESTDIR)$(PREFIX)/lib
 
 install-strip: install
 	$(STRIP_CMD) $(DESTDIR)$(PREFIX)/bin/fastahack
