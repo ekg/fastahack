@@ -3,7 +3,7 @@
 # Many of these variables are automatically set by package managers
 # and can easily be controlled by the package maintainer.
 
-CXX ?=		g++
+CXX ?=		c++
 CXXFLAGS ?=	-O3
 DESTDIR ?=	stage
 PREFIX ?=	/usr/local
