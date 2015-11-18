@@ -6,16 +6,23 @@ PREFIX ?=	./stage
 STRIP_CMD ?=	strip
 INSTALL ?=	install -c
 MKDIR ?=	mkdir -p
+AR ?=		ar
 
 # Required flags that we shouldn't override
 CXXFLAGS +=	-D_FILE_OFFSET_BITS=64
 
-OBJS =	Fasta.o FastaHack.o split.o disorder.o
+BIN =	fastahack
+LIB =	libfastahack.a
+OBJS =	Fasta.o split.o disorder.o
+MAIN =	FastaHack.o
 
-all:	fastahack
+all:	$(BIN) $(LIB)
 
-fastahack: $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OBJS) -o fastahack
+$(BIN): $(OBJS) $(MAIN)
+	$(CXX) $(CXXFLAGS) $(OBJS) $(MAIN) -o fastahack
+
+$(LIB): $(OBJS)
+	$(AR) -rs $(LIB) $(OBJS)
 
 FastaHack.o: Fasta.h FastaHack.cpp
 	$(CXX) $(CXXFLAGS) -c FastaHack.cpp
@@ -37,6 +44,6 @@ install-strip: install
 	$(STRIP_CMD) $(DESTDIR)$(PREFIX)/bin/fastahack
 
 clean:
-	rm -rf fastahack *.o stage
+	rm -rf fastahack *.o stage *.a
 
 .PHONY: clean
