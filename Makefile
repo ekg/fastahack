@@ -1,8 +1,12 @@
 
-# Use ?= to allow overriding from the env or command-line
+# Use ?= to allow overriding from the env or command-line.
+# Many of these variables are automatically set by package managers
+# and can easily be controlled by the package maintainer.
+
 CXX ?=		g++
 CXXFLAGS ?=	-O3
-PREFIX ?=	./stage
+DESTDIR ?=	stage
+PREFIX ?=	/usr/local
 STRIP_CMD ?=	strip
 INSTALL ?=	install -c
 MKDIR ?=	mkdir -p
@@ -44,6 +48,6 @@ install-strip: install
 	$(STRIP_CMD) $(DESTDIR)$(PREFIX)/bin/fastahack
 
 clean:
-	rm -rf fastahack *.o stage *.a
+	rm -rf $(BIN) $(LIB) $(OBJS) $(DESTDIR)
 
 .PHONY: clean
