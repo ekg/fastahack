@@ -7,12 +7,13 @@ CXX ?=		c++
 CXXFLAGS ?=	-O3
 DESTDIR ?=	stage
 PREFIX ?=	/usr/local
-STRIP_CMD ?=	strip
+STRIP ?=	strip
 INSTALL ?=	install -c
 MKDIR ?=	mkdir -p
 AR ?=		ar
 
 # Required flags that we shouldn't override
+# Must be compiler-independent
 CXXFLAGS +=	-D_FILE_OFFSET_BITS=64
 
 BIN =	fastahack
@@ -47,7 +48,7 @@ install: all
 	$(INSTALL) $(LIB) $(DESTDIR)$(PREFIX)/lib
 
 install-strip: install
-	$(STRIP_CMD) $(DESTDIR)$(PREFIX)/bin/$(BIN)
+	$(STRIP) $(DESTDIR)$(PREFIX)/bin/$(BIN)
 
 clean:
 	rm -rf $(BIN) $(LIB) $(OBJS) $(DESTDIR)
