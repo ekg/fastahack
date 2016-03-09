@@ -1,0 +1,13 @@
+# Control file for continuous integration testing at http://travis-ci.org/
+
+language: cpp
+compiler: gcc
+sudo: required
+dist: trusty
+script: make
+os:
+  - linux
+  - osx
+compiler:
+  - gcc
+  - clang
