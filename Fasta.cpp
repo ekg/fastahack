@@ -3,7 +3,7 @@
 // Marth Lab, Department of Biology, Boston College
 // All rights reserved.
 // ---------------------------------------------------------------------------
-// Last modified: 9 February 2010 (EG)
+// Last modified: 26 February 2019 (AMN)
 // ---------------------------------------------------------------------------
 
 #include "Fasta.h"
@@ -87,6 +87,28 @@ ostream& operator<<(ostream& output, FastaIndex& fastaIndex) {
     for( vector<FastaIndexEntry>::iterator fit = sortedIndex.begin(); fit != sortedIndex.end(); ++fit) {
         output << *fit << endl;
     }
+    return output;
+}
+
+// Read a line from in into line. Line endings ('\r', '\n', etc.) are not
+// written to line but is counted in bytes, which will hold the total bytes
+// consumed. Supports both '\n' and '\r\n' line endings. Returns true if data
+// was read, and false on EOF before anything could be read.
+bool getlineCounting(istream& in, string& line, int& bytes) {
+    bytes = 0;
+    line.clear();
+    for(int got = in.get(); got != EOF; got = in.get()) {
+        bytes++;
+        if (got == '\n') {
+            // Line is over, but we read something (the '\n')
+            return true;
+        } else if (got != '\r') {
+            // Anything other than a '\r' is real data.
+            line.push_back((char)got);
+        }
+        // '\r' is skipped, but still counted in bytes
+    }
+    return !line.empty();
 }
 
 void FastaIndex::indexReference(string refname) {
@@ -100,6 +122,7 @@ void FastaIndex::indexReference(string refname) {
     FastaIndexEntry entry;  // an entry buffer used in processing
     entry.clear();
     int line_length = 0;
+    int line_bytes = 0;
     long long offset = 0;  // byte offset from start of file
     long long line_number = 0; // current line number
     bool mismatchedLineLengths = false; // flag to indicate if our line length changes mid-file
@@ -112,18 +135,20 @@ void FastaIndex::indexReference(string refname) {
     ifstream refFile;
     refFile.open(refname.c_str());
     if (refFile.is_open()) {
-        while (getline(refFile, line)) {
+        while (getlineCounting(refFile, line, line_bytes)) {
             ++line_number;
             line_length = line.length();
             if (line[0] == ';') {
                 // fasta comment, skip
             } else if (line[0] == '+') {
                 // fastq quality header
-                getline(refFile, line);
-                line_length = line.length();
-                offset += line_length + 1;
-                // get and don't handle the quality line
-                getline(refFile, line);
+                
+                // account for header offset
+                offset += line_bytes;
+                
+                // read in quality line so its offset will be accounted for too
+                // TODO: we don't support the quality offset field of the FAI format
+                getlineCounting(refFile, line, line_bytes);
                 line_length = line.length();
             } else if (line[0] == '>' || line[0] == '@') { // fasta /fastq header
                 // if we aren't on the first entry, push the last sequence into the index
@@ -139,7 +164,6 @@ void FastaIndex::indexReference(string refname) {
                     entry.offset = offset;
                 entry.length += line_length;
                 if (entry.line_len) {
-                    //entry.line_len = entry.line_len ? entry.line_len : line_length + 1;
                     if (mismatchedLineLengths || emptyLine) {
                         if (line_length == 0) {
                             emptyLine = true; // flag empty lines, raise error only if this is embedded in the sequence
@@ -157,18 +181,18 @@ void FastaIndex::indexReference(string refname) {
                     // this flag is set here and checked on the next line
                     // because we may have reached the end of the sequence, in
                     // which case a mismatched line length is OK
-                    if (entry.line_len != line_length + 1) {
+                    if (entry.line_len != line_bytes) {
                         mismatchedLineLengths = true;
                         if (line_length == 0) {
                             emptyLine = true; // flag empty lines, raise error only if this is embedded in the sequence
                         }
                     }
                 } else {
-                    entry.line_len = line_length + 1; // first line
+                    entry.line_len = line_bytes; // first line
+                    entry.line_blen = line_length;
                 }
-                entry.line_blen = entry.line_len - 1;
             }
-            offset += line_length + 1;
+            offset += line_bytes;
         }
         // we've hit the end of the fasta file!
         // flush the last entry
@@ -249,8 +273,9 @@ FastaReference::~FastaReference(void) {
 
 string FastaReference::getSequence(string seqname) {
     FastaIndexEntry entry = index->entry(seqname);
-    int newlines_in_sequence = entry.length / entry.line_blen;
-    int seqlen = newlines_in_sequence  + entry.length;
+    int bytes_per_newline = entry.line_len - entry.line_blen;
+    int newline_bytes_in_sequence = entry.length / entry.line_blen * bytes_per_newline;
+    int seqlen = newline_bytes_in_sequence + entry.length;
     char* seq = (char*) calloc (seqlen + 1, sizeof(char));
     fseek64(file, entry.offset, SEEK_SET);
     string s;
@@ -258,6 +283,7 @@ string FastaReference::getSequence(string seqname) {
         seq[seqlen] = '\0';
         char* pbegin = seq;
         char* pend = seq + (seqlen/sizeof(char));
+        pend = remove(pbegin, pend, '\r');
         pend = remove(pbegin, pend, '\n');
         pend = remove(pbegin, pend, '\0');
         s = seq;
@@ -299,7 +325,8 @@ string FastaReference::getSubSequence(string seqname, int start, int length) {
     int newlines_before = start > 0 ? (start - 1) / entry.line_blen : 0;
     int newlines_by_end = (start + length - 1) / entry.line_blen;
     int newlines_inside = newlines_by_end - newlines_before;
-    int seqlen = length + newlines_inside;
+    int bytes_per_newline = entry.line_len - entry.line_blen;
+    int seqlen = length + newlines_inside * bytes_per_newline;
     char* seq = (char*) calloc (seqlen + 1, sizeof(char));
     fseek64(file, (off_t) (entry.offset + newlines_before + start), SEEK_SET);
     string s;
@@ -307,6 +334,7 @@ string FastaReference::getSubSequence(string seqname, int start, int length) {
         seq[seqlen] = '\0';
         char* pbegin = seq;
         char* pend = seq + (seqlen/sizeof(char));
+        pend = remove(pbegin, pend, '\r');
         pend = remove(pbegin, pend, '\n');
         pend = remove(pbegin, pend, '\0');
         s = seq;
