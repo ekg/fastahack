@@ -34,7 +34,7 @@ void FastaIndexEntry::clear(void)
 
 ostream& operator<<(ostream& output, const FastaIndexEntry& e) {
     // just write the first component of the name, for compliance with other tools
-    output << split(e.name, ' ').at(0) << "\t" << e.length << "\t" << e.offset << "\t" <<
+    output << split(e.name, ' \t').at(0) << "\t" << e.length << "\t" << e.offset << "\t" <<
         e.line_blen << "\t" << e.line_len;
     return output;  // for multiple << operators.
 }
