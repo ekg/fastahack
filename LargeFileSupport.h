@@ -9,6 +9,10 @@ typedef __int64 off_type;
 #define ftell64(a)     ftello(a)
 #define fseek64(a,b,c) fseeko(a,b,c)
 typedef off_t off_type;
+#elif defined(__CYGWIN__)
+#define ftell64(a)     ftello(a)
+#define fseek64(a,b,c) fseeko(a,b,c)
+typedef _off64_t off_type;
 #else
 #define ftell64(a)     ftello(a)
 #define fseek64(a,b,c) fseeko(a,b,c)
